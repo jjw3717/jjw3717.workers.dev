@@ -1,0 +1,4 @@
+# 사내 전용 자료입니다. 검색엔진 색인을 원치 않습니다.
+# 단, robots.txt 는 접근을 막지 못합니다. 실제 차단은 Cloudflare Access 가 합니다.
+User-agent: *
+Disallow: /
