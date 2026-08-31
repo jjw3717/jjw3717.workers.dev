@@ -1,1 +1,1 @@
-# odd-cell-dc9b.jjw3717-.workers.dev
+# jjw3717.workers.dev
