@@ -204,43 +204,43 @@ body{
   border-left:6px solid var(--add);border-radius:3px;
 }
 .board[hidden]{display:none}
-.board h2{margin:0;padding:26px 30px 0;font-size:32px;font-weight:700;letter-spacing:-.02em}
-.board .sub{padding:12px 30px 0;margin:0;font-size:24px;line-height:1.5;color:var(--muted);max-width:40em;word-break:keep-all}
+.board h2{margin:0;padding:26px 30px 0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.board .sub{padding:12px 30px 0;margin:0;font-size:17px;line-height:1.5;color:var(--muted);max-width:40em;word-break:keep-all}
 .bform{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:26px 30px}
-.bform label{display:block;font-size:22px;color:var(--muted);margin-bottom:8px}
+.bform label{display:block;font-size:15px;color:var(--muted);margin-bottom:8px}
 .bform input,.bform textarea,.bform select{
   width:100%;padding:16px 18px;border:2px solid var(--rule);border-radius:3px;
-  background:#fff;color:var(--ink);font-family:var(--sans);font-size:26px;
+  background:#fff;color:var(--ink);font-family:var(--sans);font-size:18px;
 }
 .bform textarea{min-height:190px;resize:vertical;line-height:1.55}
 .bform input:focus,.bform textarea:focus,.bform select:focus{outline:none;border-color:var(--base);box-shadow:0 0 0 4px rgba(15,60,90,.14)}
 .bform .wide{grid-column:1 / -1}
 .bform .act{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
-.bform .note{grid-column:1 / -1;font-size:22px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.bform .note{grid-column:1 / -1;font-size:15px;color:var(--muted);line-height:1.6;word-break:keep-all}
 .posts{border-top:1px solid var(--rule)}
 .post{padding:22px 30px;border-bottom:1px solid var(--rule)}
 .post:last-child{border-bottom:0}
-.post .ph{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-size:22px;color:var(--muted)}
-.post .kind{font-family:var(--mono);font-size:20px;font-weight:500;border:1px solid var(--rule);border-radius:2px;padding:2px 10px;color:var(--base)}
+.post .ph{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-size:15px;color:var(--muted)}
+.post .kind{font-family:var(--mono);font-size:14px;font-weight:500;border:1px solid var(--rule);border-radius:2px;padding:2px 10px;color:var(--base)}
 .post .kind.err{color:#0A4A5E;background:#DCF0F6;border-color:#A8D9E8}
-.post .tgt{font-weight:700;font-size:26px;color:var(--ink);margin-top:9px;letter-spacing:-.01em}
-.post .bd{margin-top:8px;font-size:26px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.post .del{margin-left:auto;border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer;font-family:var(--mono)}
+.post .tgt{font-weight:700;font-size:18px;color:var(--ink);margin-top:9px;letter-spacing:-.01em}
+.post .bd{margin-top:8px;font-size:18px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.post .del{margin-left:auto;border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;font-family:var(--mono)}
 .post .del:hover{color:var(--ink)}
-.post a{color:var(--base);font-size:22px;font-family:var(--mono)}
-.bempty{padding:40px 30px;font-size:24px;color:var(--muted);border-top:1px solid var(--rule)}
+.post a{color:var(--base);font-size:15px;font-family:var(--mono)}
+.bempty{padding:40px 30px;font-size:17px;color:var(--muted);border-top:1px solid var(--rule)}
 @media (max-width:560px){
   .bb{font-size:clamp(18px,5vw,26px);padding:5px 10px;gap:6px}
   .boardbar{gap:8px}
   .boardbar .lbl{font-size:clamp(16px,4.4vw,24px)}
   .bform{grid-template-columns:1fr;gap:12px;padding:18px 18px}
-  .bform input,.bform textarea,.bform select{font-size:clamp(18px,5vw,26px);padding:12px 13px}
-  .board h2{font-size:clamp(22px,6vw,32px);padding:18px 18px 0}
-  .board .sub,.bform label,.bform .note{font-size:clamp(15px,4.2vw,24px)}
+  .bform input,.bform textarea,.bform select{font-size:clamp(13px,3.5vw,18px);padding:12px 13px}
+  .board h2{font-size:clamp(15px,4.2vw,22px);padding:18px 18px 0}
+  .board .sub,.bform label,.bform .note{font-size:clamp(11px,2.9vw,17px)}
   .board .sub{padding:9px 18px 0}
   .post{padding:16px 18px}
-  .post .bd,.post .tgt{font-size:clamp(17px,4.8vw,26px)}
-  .post .ph,.post a{font-size:clamp(14px,3.8vw,22px)}
+  .post .bd,.post .tgt{font-size:clamp(12px,3.4vw,18px)}
+  .post .ph,.post a{font-size:clamp(10px,2.7vw,15px)}
 }
 .edsel{
   border:1.5px solid var(--rule);border-radius:2px;background:var(--panel);color:var(--ink);
@@ -314,7 +314,7 @@ footer b{color:var(--ink);font-weight:600}
     <p class="lede">설계수량에 얼마를 더해야 실제 소요수량이 되는지 찾아봅니다. 항목마다 <b>출처</b>·<b>적용 연도</b>·<b>원문 쪽수</b>를 함께 표시합니다.</p>
     <div class="boardbar">
       <span class="lbl">무기명 게시판</span>
-      <button class="bb" type="button" id="bReq" aria-expanded="false">할증률 요청 <span class="n" id="nReq"></span></button>
+      <button class="bb" type="button" id="bReq" aria-expanded="false">요청사항 <span class="n" id="nReq"></span></button>
       <button class="bb alt" type="button" id="bErr" aria-expanded="false">오류 신고 <span class="n" id="nErr"></span></button>
     </div>
     <p class="notice" role="note">
@@ -325,7 +325,7 @@ footer b{color:var(--ink);font-weight:600}
   </header>
 
   <section class="board" id="board" hidden aria-live="polite">
-    <h2 id="bTitle">할증률 요청</h2>
+    <h2 id="bTitle">요청사항</h2>
     <p class="sub" id="bSub"></p>
     <form class="bform" id="bForm" autocomplete="off">
       <div>
@@ -743,7 +743,7 @@ function openBoard(kind){
   $b('bReq').setAttribute('aria-expanded', !same && kind === 'request');
   $b('bErr').setAttribute('aria-expanded', !same && kind === 'error');
   if(same) return;
-  $b('bTitle').textContent = kind === 'error' ? '오류 신고' : '할증률 요청';
+  $b('bTitle').textContent = kind === 'error' ? '오류 신고' : '요청사항';
   $b('bSub').textContent = BSUB[kind];
   $b('bMsg').textContent = '';
   renderPosts();
@@ -773,7 +773,7 @@ $b('bForm').onsubmit = ev => {
 };
 $b('bMail').onclick = () => {
   const v = formVals();
-  const kindKo = bState.kind === 'error' ? '오류 신고' : '할증률 요청';
+  const kindKo = bState.kind === 'error' ? '오류 신고' : '요청사항';
   const subject = `[재료 할증률 ${kindKo}] ${v.target || '(대상 미기입)'}`;
   const body = [
     `구분: ${kindKo}`,
