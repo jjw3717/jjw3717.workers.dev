@@ -8179,17 +8179,19 @@
    "lo": 15.0,
    "hi": 15.0,
    "disp": "15",
-   "src": "기타",
-   "loc": "기타",
-   "page": null,
-   "ed": null,
-   "from": null,
+   "src": "KCS-STD",
+   "loc": "5-2-1. 매트부설",
+   "page": 109,
+   "ed": {
+    "ed": "2026년 적용",
+    "file": "2026년_건설공사_표준품셈.pdf",
+    "year": 2026
+   },
+   "from": 2026,
    "to": null,
-   "full": "기타",
-   "note": "기타",
-   "tags": [
-    "기타"
-   ],
+   "full": "매트부설",
+   "note": "",
+   "tags": [],
    "grade": "기타",
    "roundUp": false,
    "rev": "2026-09-01"
@@ -8206,17 +8208,19 @@
    "lo": 10.0,
    "hi": 10.0,
    "disp": "10",
-   "src": "기타",
-   "loc": "기타",
-   "page": null,
-   "ed": null,
-   "from": null,
+   "src": "KCS-STD",
+   "loc": "5-2-1. 매트부설",
+   "page": 109,
+   "ed": {
+    "ed": "2026년 적용",
+    "file": "2026년_건설공사_표준품셈.pdf",
+    "year": 2026
+   },
+   "from": 2026,
    "to": null,
-   "full": "기타",
-   "note": "기타",
-   "tags": [
-    "기타"
-   ],
+   "full": "매트부설",
+   "note": "",
+   "tags": [],
    "grade": "기타",
    "roundUp": false,
    "rev": "2026-09-01"
