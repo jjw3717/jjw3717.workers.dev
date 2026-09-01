@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>재료 할증률 — 건설공사 표준품셈</title>
+<meta name="description" content="공종·연도·출처별 건설 재료 할증률 조회 및 소요수량 계산">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+:root{
+  --surface:#E8EDF0;
+  --panel:#FBFCFD;
+  --ink:#122334;
+  --muted:#5E7488;
+  --rule:#C6D3DB;
+  --base:#0F3C5A;
+  --add:#00A3C4;
+  --add-soft:#BDE6F1;
+  --sans:"Pretendard Variable",Pretendard,system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --barbase:58%;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--surface);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 20px}
+
+/* ---------- header ---------- */
+.topline{height:5px;background:linear-gradient(90deg,var(--base) 0%,var(--base) 42%,var(--add) 100%)}
+.masthead{padding:38px 0 22px}
+.ci svg{display:block;width:auto;height:66px;max-width:92vw}
+.masthead h1{margin:0;font-size:clamp(22px,4.5vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.05}
+.masthead h1 em{font-style:normal;color:var(--add)}
+.lede{margin:14px 0 0;max-width:44em;color:var(--muted);font-size:14px}
+
+/* ---------- controls ---------- */
+.controls{
+  position:sticky;top:0;z-index:20;background:var(--surface);
+  padding:12px 0 10px;border-bottom:1px solid var(--rule);
+  box-shadow:0 10px 14px -14px rgba(18,35,52,.5);
+}
+.searchrow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+.field{position:relative;flex:1 1 240px}
+.field input{
+  width:100%;padding:19px 20px 19px 48px;border:1.5px solid var(--rule);
+  border-radius:3px;background:var(--panel);color:var(--ink);
+  font-family:var(--sans);font-size:19px;
+}
+.field input::placeholder{color:#93A6B4}
+.field input:focus{outline:none;border-color:var(--base);box-shadow:0 0 0 3px rgba(15,60,90,.14)}
+.field svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);width:19px;height:19px}
+.tally{
+  display:flex;align-items:center;padding:0 14px;border:1.5px solid var(--rule);
+  border-radius:2px;background:var(--panel);
+  font-family:var(--mono);font-size:13px;font-weight:500;white-space:nowrap;
+}
+.tally b{font-weight:700}
+.tally span{color:var(--muted)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{
+  border:1px solid var(--rule);background:transparent;color:var(--muted);
+  padding:5px 11px;border-radius:999px;cursor:pointer;
+  font-family:var(--sans);font-size:12.5px;font-weight:500;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.chip:hover{border-color:var(--base);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--base);border-color:var(--base);color:#F2F8FB}
+.chip.alt[aria-pressed="true"]{background:var(--add);border-color:var(--add);color:#062A38}
+.chips .sep{width:1px;background:var(--rule);margin:2px 5px}
+
+/* ---------- list ---------- */
+.list{padding:6px 0 0}
+.card{border-bottom:1px solid var(--rule);padding:18px 2px 16px}
+.card:last-child{border-bottom:0}
+.head{
+  display:flex;align-items:flex-start;gap:16px;width:100%;
+  background:none;border:0;padding:0;cursor:pointer;text-align:left;color:inherit;font:inherit;
+}
+.head:focus-visible{outline:2px solid var(--base);outline-offset:4px}
+.idt{flex:1;min-width:0}
+.name{font-size:17px;font-weight:700;letter-spacing:-.015em}
+.spec{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:3px;word-break:keep-all}
+.rate{display:flex;align-items:baseline;gap:3px;flex:none;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.rate b{font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.rate i{font-style:normal;font-size:13px;color:var(--muted)}
+
+.bar{position:relative;height:9px;margin:13px 0 9px;background:#D6E0E7;border-radius:1px;overflow:hidden}
+.bar .b1{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--base);
+  transition:width .55s cubic-bezier(.16,.84,.44,1);transition-delay:var(--d,0ms)}
+.bar .b2{position:absolute;top:0;bottom:0;left:var(--barbase);width:0;
+  background:repeating-linear-gradient(115deg,var(--add) 0 5px,var(--add-soft) 5px 10px);
+  transition:width .55s cubic-bezier(.16,.84,.44,1);transition-delay:calc(var(--d,0ms) + 180ms)}
+.ready .b1{width:var(--barbase)}
+.ready .b2{width:var(--w)}
+.bar .tick{position:absolute;left:var(--barbase);top:-3px;bottom:-3px;width:1px;background:var(--ink);opacity:.55}
+
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.clause{
+  font-family:var(--mono);font-size:11px;font-weight:500;color:var(--base);
+  border:1px solid var(--rule);border-radius:2px;padding:2px 6px;background:var(--panel);
+}
+.tagm{font-family:var(--mono);font-size:11px;letter-spacing:.02em}
+.yr{
+  font-family:var(--mono);font-size:11px;font-weight:500;color:#0A4A5E;
+  background:#DCF0F6;border:1px solid #A8D9E8;border-radius:2px;padding:2px 6px;
+}
+.yr.past{color:var(--muted);background:#DFE6EB;border-color:var(--rule)}
+.tr{font-size:11px;border:1px solid var(--rule);border-radius:999px;padding:1px 8px;background:var(--panel)}
+.grade{font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+.grade.key{color:var(--add);font-weight:700}
+.more{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* ---------- detail ---------- */
+.detail{display:none;margin-top:14px;background:var(--panel);border:1px solid var(--rule);border-radius:2px}
+.card.open .detail{display:block}
+.drow{display:flex;gap:14px;padding:11px 14px;border-bottom:1px solid var(--rule);font-size:13px}
+.drow:last-child{border-bottom:0}
+.drow dt{flex:none;width:78px;margin:0;color:var(--muted);font-size:12px;padding-top:1px}
+.drow dd{margin:0;flex:1;word-break:keep-all}
+.drow dd .sub{display:block;margin-top:3px;font-size:11.5px;color:var(--muted)}
+.drow dd .mono{font-family:var(--mono);font-size:12px}
+.calc{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 14px;background:#F0F4F7}
+.calc label{font-size:12px;color:var(--muted)}
+.calc input{
+  width:104px;padding:7px 9px;border:1.5px solid var(--rule);border-radius:2px;background:var(--panel);
+  font-family:var(--mono);font-size:13px;text-align:right;color:var(--ink);
+}
+.calc input:focus{outline:none;border-color:var(--base)}
+.calc .u{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.calc .arrow{color:var(--muted)}
+.calc .out{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;color:var(--base)}
+.calc .hint{width:100%;font-size:11.5px;color:var(--muted)}
+
+/* ---------- 원문 버튼 · 뷰어 ---------- */
+.srcbtns{display:flex;flex-wrap:wrap;gap:8px;padding:11px 14px;border-bottom:1px solid var(--rule)}
+.ob{
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  border:1.5px solid var(--base);background:var(--base);color:#F2F8FB;
+  border-radius:2px;padding:7px 12px;font-family:var(--sans);font-size:12.5px;font-weight:600;
+  text-decoration:none;
+}
+.ob:hover{background:#0A2F48}
+.ob.ghost{background:transparent;color:var(--base)}
+.ob.ghost:hover{background:#DBE5EC}
+.ob:disabled,.ob.off{border-color:var(--rule);background:transparent;color:#9DAEBB;cursor:not-allowed}
+.ob:focus-visible{outline:2px solid var(--add);outline-offset:2px}
+.pgno{font-family:var(--mono);font-size:11px;color:var(--muted);align-self:center}
+
+
+/* ---------- 게시판 (2배 확대) ---------- */
+.boardbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:26px}
+.boardbar .lbl{font-size:24px;color:var(--muted);margin-right:4px}
+.bb{
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  border:1.5px solid var(--base);background:transparent;color:var(--base);
+  border-radius:3px;padding:6px 13px;font-family:var(--sans);font-size:26px;font-weight:600;
+  line-height:1.2;
+}
+.bb:hover{background:#DBE5EC}
+.bb[aria-expanded="true"]{background:var(--base);color:#F2F8FB}
+.bb.alt{border-color:var(--add);color:#0A4A5E}
+.bb.alt:hover{background:#DCF0F6}
+.bb.alt[aria-expanded="true"]{background:var(--add);color:#062A38}
+.bb .n{font-family:var(--mono);font-size:20px;opacity:.8;line-height:1}
+.board{
+  margin:26px 0 8px;background:var(--panel);border:1px solid var(--rule);
+  border-left:6px solid var(--add);border-radius:3px;
+}
+.board[hidden]{display:none}
+.board h2{margin:0;padding:26px 30px 0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.board .sub{padding:12px 30px 0;margin:0;font-size:17px;line-height:1.5;color:var(--muted);max-width:40em;word-break:keep-all}
+.bform{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:26px 30px}
+.bform label{display:block;font-size:15px;color:var(--muted);margin-bottom:8px}
+.bform input,.bform textarea,.bform select{
+  width:100%;padding:16px 18px;border:2px solid var(--rule);border-radius:3px;
+  background:#fff;color:var(--ink);font-family:var(--sans);font-size:18px;
+}
+.bform textarea{min-height:190px;resize:vertical;line-height:1.55}
+.bform input:focus,.bform textarea:focus,.bform select:focus{outline:none;border-color:var(--base);box-shadow:0 0 0 4px rgba(15,60,90,.14)}
+.bform .wide{grid-column:1 / -1}
+.bform .act{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.bform .note{grid-column:1 / -1;font-size:15px;color:var(--muted);line-height:1.6;word-break:keep-all}
+.posts{border-top:1px solid var(--rule)}
+.post{padding:22px 30px;border-bottom:1px solid var(--rule)}
+.post:last-child{border-bottom:0}
+.post .ph{display:flex;flex-wrap:wrap;align-items:center;gap:14px;font-size:15px;color:var(--muted)}
+.post .kind{font-family:var(--mono);font-size:14px;font-weight:500;border:1px solid var(--rule);border-radius:2px;padding:2px 10px;color:var(--base)}
+.post .kind.err{color:#0A4A5E;background:#DCF0F6;border-color:#A8D9E8}
+.post .tgt{font-weight:700;font-size:18px;color:var(--ink);margin-top:9px;letter-spacing:-.01em}
+.post .bd{margin-top:8px;font-size:18px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.post .del{margin-left:auto;border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;font-family:var(--mono)}
+.post .del:hover{color:var(--ink)}
+.post a{color:var(--base);font-size:15px;font-family:var(--mono)}
+.bempty{padding:40px 30px;font-size:17px;color:var(--muted);border-top:1px solid var(--rule)}
+@media (max-width:560px){
+  .bb{font-size:clamp(18px,5vw,26px);padding:5px 10px;gap:6px}
+  .boardbar{gap:8px}
+  .boardbar .lbl{font-size:clamp(16px,4.4vw,24px)}
+  .bform{grid-template-columns:1fr;gap:12px;padding:18px 18px}
+  .bform input,.bform textarea,.bform select{font-size:clamp(13px,3.5vw,18px);padding:12px 13px}
+  .board h2{font-size:clamp(15px,4.2vw,22px);padding:18px 18px 0}
+  .board .sub,.bform label,.bform .note{font-size:clamp(11px,2.9vw,17px)}
+  .board .sub{padding:9px 18px 0}
+  .post{padding:16px 18px}
+  .post .bd,.post .tgt{font-size:clamp(12px,3.4vw,18px)}
+  .post .ph,.post a{font-size:clamp(10px,2.7vw,15px)}
+}
+.edsel{
+  border:1.5px solid var(--rule);border-radius:2px;background:var(--panel);color:var(--ink);
+  font-family:var(--mono);font-size:12px;padding:7px 8px;cursor:pointer;
+}
+.edsel:focus{outline:none;border-color:var(--base)}
+
+/* ---------- empty & footer ---------- */
+/* ---------- 페이지 내비게이션 ---------- */
+.pager{
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;
+  gap:4px;padding:34px 6px 18px;
+}
+.pgnum{
+  min-width:34px;height:34px;padding:0 4px;border:0;background:none;cursor:pointer;
+  color:var(--base);font-family:var(--sans);font-size:15px;font-weight:600;
+  border-radius:50%;
+}
+.pgnum:hover{background:var(--panel)}
+.pgnum.cur{background:var(--base);color:#F2F8FB;cursor:default}
+.pgprev,.pgnext{
+  display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 12px;margin:0 6px;
+  border:0;background:none;cursor:pointer;color:var(--base);
+  font-family:var(--sans);font-size:14px;font-weight:600;border-radius:3px;
+}
+.pgprev:hover,.pgnext:hover{background:var(--panel)}
+
+.empty{padding:56px 6px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:8px}
+.empty .how{
+  display:inline-block;margin-top:14px;text-align:left;background:var(--panel);
+  border:1px solid var(--rule);border-left:2px solid var(--add);border-radius:2px;
+  padding:12px 14px;font-size:12.5px;line-height:1.65;max-width:33em;
+}
+.empty .how b{color:var(--ink)}
+.empty code{font-family:var(--mono);font-size:11.5px;background:#DFE6EB;padding:1px 4px;border-radius:2px}
+
+footer{border-top:1px solid var(--rule);margin-top:34px;padding:26px 0 56px;font-size:12px;color:var(--muted)}
+footer p{margin:0 0 8px;max-width:52em}
+footer b{color:var(--ink);font-weight:600}
+.srctable{width:100%;border-collapse:collapse;margin:6px 0 18px;font-size:11.5px}
+.srctable th,.srctable td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
+.srctable th{color:var(--ink);font-weight:600;white-space:nowrap}
+.srctable td.c{font-family:var(--mono);font-size:11px;white-space:nowrap}
+.srctable tr.soon td{opacity:.62}
+.srctable a{color:var(--base)}
+.srctable a.dl{font-weight:600;text-decoration:none}
+.srctable .badge{font-family:var(--mono);font-size:10px;border:1px solid var(--rule);border-radius:2px;padding:1px 5px}
+.fixnote{border-left:2px solid var(--add);padding-left:10px;margin-top:14px}
+
+/* ---------- 주의 배너 ---------- */
+.notice{
+  display:flex;align-items:flex-start;gap:16px;margin:22px 0 0;
+  background:var(--panel);border:1px solid var(--rule);border-left:6px solid var(--add);
+  border-radius:2px;padding:20px 22px;font-size:26px;line-height:1.45;color:var(--ink);
+  letter-spacing:-.015em;word-break:keep-all;
+}
+.notice .tag{
+  flex:none;font-family:var(--mono);font-size:21px;font-weight:700;letter-spacing:.08em;
+  color:var(--add);border:2px solid var(--add);border-radius:2px;padding:2px 10px;margin-top:2px;
+}
+.notice b{font-weight:700}
+@media (max-width:560px){
+  .notice{font-size:clamp(19px,5.4vw,26px);gap:10px;padding:15px 16px;border-left-width:5px}
+  .notice .tag{font-size:15px;padding:1px 7px}
+}
+
+@media (max-width:560px){
+  .tally{width:100%;justify-content:center;padding:9px}
+  .rate b{font-size:22px}
+  .drow{flex-direction:column;gap:3px}
+  .drow dt{width:auto}
+  .srctable th:nth-child(4),.srctable td:nth-child(4),
+  .srctable th:nth-child(7),.srctable td:nth-child(7){display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .bar .b1,.bar .b2{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+
+<div class="wrap">
+  <header class="masthead">
+    <h1>재료 <em>할증률</em></h1>
+    <p class="lede">설계수량에 얼마를 더해야 실제 소요수량이 되는지 찾아봅니다. 항목마다 <b>출처</b>·<b>적용 연도</b>·<b>원문 쪽수</b>를 함께 표시합니다.</p>
+    <p class="notice" role="note">
+      <span class="tag">주의사항</span>
+      <span>본 자료는 <b>참고용</b>이며, 설계도서 최종 작성 시 반드시 <b>관련 원문을 확인한 후</b> 사용하시기 바랍니다.</span>
+    </p>
+  </header>
+
+  <div class="controls">
+    <div class="searchrow">
+      <div class="field">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14"/>
+        </svg>
+        <input id="q" type="search" placeholder="예: 레미콘, 사석, 이형철근, 벽돌" autocomplete="off" aria-label="재료 검색">
+      </div>
+      <div class="tally" aria-live="polite"><b id="shown">0</b><span>&nbsp;/&nbsp;<span id="total">0</span></span></div>
+    </div>
+    <div class="chips" id="chips" role="group" aria-label="목록 옵션"></div>
+  </div>
+
+  <main class="list" id="list"></main>
+  <nav class="pager" id="pager" aria-label="목록 페이지"></nav>
+
+  <footer>
+    <div class="boardbar">
+      <span class="lbl">무기명 게시판</span>
+      <button class="bb" type="button" id="bReq" aria-expanded="false">요청사항 <span class="n" id="nReq"></span></button>
+      <button class="bb alt" type="button" id="bErr" aria-expanded="false">오류 신고 <span class="n" id="nErr"></span></button>
+    </div>
+
+    <section class="board" id="board" hidden aria-live="polite">
+      <h2 id="bTitle">요청사항</h2>
+      <p class="sub" id="bSub"></p>
+      <form class="bform" id="bForm" autocomplete="off">
+        <div>
+          <label for="bTarget">대상 재료 · 항목</label>
+          <input id="bTarget" required maxlength="60" placeholder="예: 아스팔트 콘크리트">
+        </div>
+        <div>
+          <label for="bCat">분류 <span style="opacity:.7">(선택)</span></label>
+          <select id="bCat"></select>
+        </div>
+        <div class="wide">
+          <label for="bBody">내용</label>
+          <textarea id="bBody" required maxlength="1200" placeholder="필요한 값, 근거 원문, 잘못된 부분 등을 적어주세요."></textarea>
+        </div>
+        <div>
+          <label for="bRef">참고 링크 <span style="opacity:.7">(선택)</span></label>
+          <input id="bRef" type="url" placeholder="https://">
+        </div>
+        <div>
+          <label for="bNick">표시 이름 <span style="opacity:.7">(비우면 익명)</span></label>
+          <input id="bNick" maxlength="20" placeholder="익명">
+        </div>
+        <div class="act">
+          <button class="ob" type="submit">글 올리기</button>
+          <button class="ob ghost" type="button" id="bMail">메일로 접수 ↗</button>
+          <span class="pgno" id="bMsg"></span>
+        </div>
+        <p class="note">이름·연락처를 남기지 않아도 됩니다. 올린 글은 <b>이 브라우저에만</b> 저장되므로 관리자에게 꼭 전달하려면 <b>메일로 접수</b>를 눌러 <span style="font-family:var(--mono)">jjw3717@nate.com</span> 으로 보내주세요.</p>
+      </form>
+      <div class="posts" id="bPosts"></div>
+    </section>
+
+    <p><b>출처 목록</b></p>
+    <table class="srctable" id="srctable"></table>
+    <p class="fixnote"><b>다운로드 · 원본링크</b> <b>다운로드</b>는 사이트 옆 <span style="font-family:var(--mono)">docs/</span> 폴더에 둔 원문 PDF를 바로 받습니다. <b>원본링크</b>는 발행기관의 원문 게시판을 새 창으로 엽니다. 원문 PDF는 저작권 표시가 붙은 자료라 이 사이트가 재배포하지 않으니, 공개 배포 시 <span style="font-family:var(--mono)">docs/</span>는 함께 올리지 마세요.</p>
+    <p><b>주의사항</b> — 본 자료는 참고용이며, 설계도서 최종 작성 시 반드시 관련 원문을 확인한 후 사용하시기 바랍니다. 할증률은 현장 여건을 반영해 조절할 수 있습니다.</p>
+    <p class="fixnote"><b>데이터 정정</b> 원본 엑셀에서 강재류 20개 항목(이형철근~이음부속류)의 조항 위치가 <span class="mono" style="font-family:var(--mono)">1-3-1 6. 속채움(해상)</span>으로 잘못 기입되어 있어 <span style="font-family:var(--mono)">1-3-1 7. 강재류</span>로 바로잡았습니다.</p>
+    <p class="fixnote"><b>적용 연도 안내</b> 현재 수록된 항목은 모두 <b>2026년 상반기 판</b>을 확인한 값입니다. 과년도(2024·2025) 원문을 대조하기 전까지 그 연도로는 항목이 표시되지 않습니다. 값이 바뀐 사실이 확인되면 마스터 엑셀에서 같은 ID로 행을 추가하세요.</p>
+    <p id="built" style="font-family:var(--mono);font-size:11px"></p>
+    <p style="margin-top:14px"><b>만든이</b> 정제원 · <a href="mailto:jjw3717@nate.com">jjw3717@nate.com</a></p>
+  </footer>
+</div>
+
+<script>
+const DB = /*__DATA__*/;
+const items = DB.items, meta = DB.meta, SRC = DB.sources;
+const UNIT = 0.58;                       // 할증 1%p 당 막대 폭
+const LATEST = meta.latest;
+const state = { q:'', trade:'전체', cat:'전체', year:'전체', src:'전체', keyOnly:false, sort:'id', page:1 };
+
+const list   = document.getElementById('list');
+const chips  = document.getElementById('chips');
+const pager  = document.getElementById('pager');
+document.getElementById('total').textContent = items.length;
+document.getElementById('built').textContent =
+  `${meta.src_file} · ${meta.built} 생성 · ${meta.count}건`;
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const srcName  = c => (SRC[c] && SRC[c].name) || c || '출처 미기입';
+const inYear   = (it, y) => y === '전체' || ((it.from ?? 0) <= y && (it.to === null || it.to === undefined || it.to >= y));
+const activeSrc = () => Object.values(SRC).filter(s => s.active);
+
+/* ── 목록 옵션 칩 (주요 재료만 / 정렬) ───────────────────── */
+function chip(label, pressed, cls){
+  const b = document.createElement('button');
+  b.className = 'chip' + (cls ? ' ' + cls : '');
+  b.type = 'button'; b.textContent = label;
+  b.setAttribute('aria-pressed', pressed);
+  return b;
+}
+let bKey, bSort;
+function buildChips(){
+  chips.textContent = '';
+  bKey = chip('주요 재료만', state.keyOnly, 'alt');
+  bKey.onclick = () => { state.keyOnly = !state.keyOnly; state.page = 1; sync(); };
+  chips.appendChild(bKey);
+  bSort = chip('할증 높은 순', state.sort === 'rate', 'alt');
+  bSort.onclick = () => { state.sort = state.sort === 'id' ? 'rate' : 'id'; state.page = 1; sync(); };
+  chips.appendChild(bSort);
+}
+
+/* ── 검색 ────────────────────────────────────────────────── */
+document.getElementById('q').addEventListener('input', e => {
+  state.q = e.target.value.trim().toLowerCase(); state.page = 1; sync();
+});
+
+function match(it){
+  if(state.trade !== '전체' && !it.trades.includes(state.trade)) return false;
+  if(state.cat !== '전체' && it.cat !== state.cat) return false;
+  if(state.src !== '전체' && it.src !== state.src) return false;
+  if(!inYear(it, state.year)) return false;
+  if(state.keyOnly && it.grade !== '주요') return false;
+  if(!state.q) return true;
+  const s = SRC[it.src] || {};
+  const hay = [it.name, it.spec, it.full, it.note, it.loc, it.id, s.name, ...it.trades, ...it.tags]
+    .join(' ').toLowerCase();
+  return hay.includes(state.q);
+}
+
+const fmt = n => (Math.round(n * 100) / 100).toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+
+/* ── 카드 ────────────────────────────────────────────────── */
+function card(it, i){
+  const el = document.createElement('article');
+  el.className = 'card';
+  el.style.setProperty('--w', (UNIT * it.hi).toFixed(2) + '%');
+  el.style.setProperty('--d', Math.min(i, 20) * 22 + 'ms');
+
+  const u = (it.unit || '').split(',')[0];
+  const s = SRC[it.src] || {};
+  const period = it.to ? `${it.from}~${it.to}` : `${it.from}~ 현재`;
+  const past = !!it.to;
+
+  el.innerHTML = `
+    <button class="head" aria-expanded="false">
+      <span class="idt">
+        <span class="name">${esc(it.name)}</span>
+        <span class="spec">${esc(it.spec || '—')}${it.unit ? ' · ' + esc(it.unit) : ''}</span>
+      </span>
+      <span class="rate"><b>${esc(it.disp)}</b><i>%</i></span>
+    </button>
+    <div class="bar" aria-hidden="true"><span class="b1"></span><span class="b2"></span><span class="tick"></span></div>
+    <div class="meta">
+      <span class="clause">${esc(it.loc || '조항 미기입')}</span>
+      <span class="tagm">${esc(srcName(it.src))}</span>
+      <span class="yr${past ? ' past' : ''}" title="적용 기간">${esc(period)}</span>
+      ${it.trades.map(t => `<span class="tr">${esc(t)}</span>`).join('')}
+      <span class="grade${it.grade === '주요' ? ' key' : ''}">${esc(it.grade)}</span>
+      <span class="more">자세히 ↓</span>
+    </div>
+    <div class="detail">
+      <dl class="drow"><dt>출처</dt><dd>${esc(s.name || it.src || '—')}
+        <span class="sub">${esc(s.org || '')}${s.edition ? ' · ' + esc(s.edition) + ' 판' : ''}${s.cycle ? ' · 개정 ' + esc(s.cycle) : ''}</span>
+        ${s.where ? `<span class="sub mono">${esc(s.where)}</span>` : ''}</dd></dl>
+      <dl class="drow"><dt>조항 위치</dt><dd class="mono">${esc(it.loc || '—')}</dd></dl>
+      <dl class="drow"><dt>적용 연도</dt><dd class="mono">${esc(period)}
+        ${it.prev ? `<span class="sub">직전 기준 ${esc(it.prev.disp)}% (${esc(String(it.prev.from))}년~)</span>` : ''}</dd></dl>
+      <dl class="drow"><dt>공종</dt><dd>${it.trades.map(esc).join(' · ')}</dd></dl>
+      ${it.full ? `<dl class="drow"><dt>정식명칭</dt><dd>${esc(it.full)}</dd></dl>` : ''}
+      ${it.note ? `<dl class="drow"><dt>비고</dt><dd>${esc(it.note)}</dd></dl>` : ''}
+      ${it.tags.length ? `<dl class="drow"><dt>태그</dt><dd>${it.tags.map(esc).join(' · ')}</dd></dl>` : ''}
+      <div class="srcbtns">${srcBtns(s, it)}</div>
+      <dl class="drow"><dt>항목 ID</dt><dd class="mono">${esc(it.id)}${it.rev ? ` <span class="sub">수정 ${esc(it.rev)}</span>` : ''}</dd></dl>
+      <div class="calc">
+        <label for="c_${esc(it.id)}">설계수량</label>
+        <input id="c_${esc(it.id)}" type="number" min="0" step="any" placeholder="0">
+        <span class="u">${esc(u)}</span>
+        <span class="arrow">→</span>
+        <span class="out" data-out>소요수량 —</span>
+        ${it.roundUp ? '<span class="hint">자재 수량은 올림 적용 항목입니다.</span>' : ''}
+        ${it.lo !== it.hi ? '<span class="hint">할증률 범위 항목이라 최소·최대를 함께 표시합니다.</span>' : ''}
+      </div>
+    </div>`;
+
+  const head = el.querySelector('.head');
+  head.onclick = () => {
+    const open = el.classList.toggle('open');
+    head.setAttribute('aria-expanded', open);
+    el.querySelector('.more').textContent = open ? '접기 ↑' : '자세히 ↓';
+  };
+
+  const edsel = el.querySelector('[data-ed]'), dl = el.querySelector('[data-dl]');
+  if(edsel && dl) edsel.onchange = () => {
+    dl.href = DOCDIR + encodeURIComponent(edsel.value);
+    dl.setAttribute('download', edsel.value);
+  };
+
+  const inp = el.querySelector('.calc input'), out = el.querySelector('[data-out]');
+  inp.oninput = () => {
+    const v = parseFloat(inp.value);
+    if(!(v >= 0)){ out.textContent = '소요수량 —'; return; }
+    const calc = r => { const x = v * (1 + r / 100); return it.roundUp ? Math.ceil(x) : x; };
+    out.textContent = it.lo !== it.hi
+      ? `${fmt(calc(it.lo))} ~ ${fmt(calc(it.hi))} ${u}`
+      : `${fmt(calc(it.hi))} ${u}`;
+  };
+  return el;
+}
+
+/* ── 빈 결과 안내 ────────────────────────────────────────── */
+function emptyHTML(){
+  const soonTrade = state.trade !== '전체' && !meta.trades.includes(state.trade);
+  if(soonTrade){
+    const s = Object.values(SRC).find(x => x.trades.includes(state.trade));
+    return `<div class="empty"><strong>${esc(state.trade)} 공종은 아직 등록 전입니다</strong>
+      틀은 이미 잡혀 있어서 데이터만 넣으면 이 탭에 바로 나타납니다.
+      <div class="how"><b>넣는 순서</b><br>
+        1. 마스터 엑셀 <code>출처</code> 시트에서 <code>${esc(s ? s.code : '해당 출처')}</code> 행의 상태를 <code>사용중</code>으로 바꿉니다.<br>
+        2. <code>DB</code> 시트에 행을 추가합니다. 공종 <code>${esc(state.trade)}</code>, 출처코드 <code>${esc(s ? s.code : '')}</code>, ID 접두는 <code>${state.trade === '전기' ? 'EL' : state.trade === '정보통신' ? 'IC' : 'ET'}</code>.<br>
+        3. <code>python convert.py</code> → <code>python build_site.py</code>.<br>
+        ${s ? `<span style="color:var(--muted)">원문 — ${esc(s.where)}</span>` : ''}
+      </div></div>`;
+  }
+  const yearIssue = state.year !== '전체' && !meta.years.includes(state.year);
+  if(yearIssue){
+    return `<div class="empty"><strong>${esc(String(state.year))}년으로 등록된 항목이 없습니다</strong>
+      값을 지어내지 않으려고 비워 둔 자리입니다.
+      <div class="how"><b>과년도를 채우려면</b><br>
+        해당 연도 원문을 대조한 뒤, 값이 달랐던 항목만 마스터 엑셀에서 <b>같은 ID로 행을 추가</b>하고
+        기존 행의 <code>적용종료</code>에 직전 연도를 적습니다. 값이 그대로였다면 기존 행의
+        <code>적용시작</code>을 그 연도로 앞당기면 됩니다.<br>
+        <span style="color:var(--muted)">원문 — CODIL www.codil.or.kr</span>
+      </div></div>`;
+  }
+  return `<div class="empty"><strong>찾는 재료가 없습니다</strong>
+    품명 대신 규격이나 분류로 다시 찾아보세요. 예를 들어 “해상”, “강재”, “벽돌”.</div>`;
+}
+
+const DOCDIR = 'docs/';
+const ENABLE_DL = false;   // 원문 내려받기 on/off        // 원문 PDF를 두는 폴더
+
+/* ── 출처별 원문 판(연도) — 예비용 ───────────────────────────
+   평소에는 엑셀 '원문파일' 시트 값이 쓰입니다. 아래는 그 시트가
+   비어 있을 때만 쓰이는 대비책이라 손대지 않아도 됩니다.        */
+const EDITIONS = {
+  'KCS-STD':[
+    {ed:'2026년 상반기', f:'2026년_건설공사_표준품셈.pdf'},
+    {ed:'2025년',        f:'2025년_건설공사_표준품셈.pdf'},
+    {ed:'2024년',        f:'2024년_건설공사_표준품셈.pdf'},
+  ],
+  'LH-CIV':[{ed:'2025.11 (45차 개정)', f:'LH설계지침토목-2025_11.pdf'}],
+  'NHR-PRC':[{ed:'2025.06', f:'250612_국도건설공사_설계실무_요령.pdf'}],
+};
+const edsOf = code => {
+  const s = SRC[code];
+  // 1순위: 엑셀 '원문파일' 시트 (판이 늘어도 코드를 고칠 일이 없다)
+  if(s && s.eds && s.eds.length)
+    return s.eds.map(e => ({ ed:e.ed || String(e.year || ''), f:e.file, year:e.year, cur:e.cur }));
+  // 2순위: 아래 하드코딩 (엑셀에 아직 안 넣었을 때만 쓰인다)
+  const list = EDITIONS[code];
+  if(list && list.length) return list;
+  return s && s.file ? [{ed:s.edition || '원문', f:s.file}] : [];
+};
+
+function srcBtns(s, it){
+  const eds = edsOf(s.code);
+  // 기본 선택은 그 항목의 값을 확인한 판. 쪽 번호가 그 판 기준이라 어긋나면 안 된다.
+  const cur = (it && it.ed && eds.find(e => e.f === it.ed.file)) || eds[0];
+  const sel = eds.length > 1
+    ? `<select class="edsel" data-ed aria-label="원문 판 선택">${eds.map(e =>
+        `<option value="${esc(e.f)}"${e.f === (cur && cur.f) ? ' selected' : ''}>${esc(e.ed)}</option>`).join('')}</select>`
+    : eds.length === 1 ? `<span class="pgno">${esc(eds[0].ed)}</span>` : '';
+  // 원문 내려받기는 사내 배포 환경이 정해진 뒤에 다시 켭니다.
+  // 되살리려면 ENABLE_DL 을 true 로 바꾸면 끝입니다.
+  const dl = (ENABLE_DL && cur)
+    ? `<a class="ob" data-dl href="${DOCDIR}${encodeURIComponent(cur.f)}" download="${esc(cur.f)}">↓ 원문 받기</a>`
+    : `<span class="ob soon" title="원문 내려받기는 준비 중입니다">원문 받기 <b>추후 업데이트 예정</b></span>`;
+  const lk = s.link
+    ? `<a class="ob ghost" href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">원본링크 ↗</a>`
+    : `<span class="ob off" title="출처 시트에 원문링크가 없습니다">원본링크 ↗</span>`;
+  return sel + dl + lk +
+    `<span class="pgno">${it && it.page ? '원문 ' + esc(String(it.page)) + '쪽' : ''}</span>`;
+}
+
+/* ── 출처 표 ─────────────────────────────────────────────── */
+function buildSrcTable(){
+  const rows = Object.values(SRC).map(s => {
+    const n = items.filter(it => it.src === s.code).length;
+    return `<tr class="${s.active ? '' : 'soon'}">
+      <td class="c">${esc(s.code)}</td>
+      <td><b>${esc(s.name)}</b><br>${esc(s.org)}</td>
+      <td class="c">${esc(s.trades.join(' · '))}</td>
+      <td>${s.link ? `<a href="${esc(s.link)}" target="_blank" rel="noopener noreferrer">${esc(s.where)} ↗</a>` : esc(s.where)}</td>
+    <td class="c">${!edsOf(s.code).length ? '—' : ENABLE_DL
+        ? edsOf(s.code).map(e => `<a class="dl" href="${DOCDIR}${encodeURIComponent(e.f)}" download="${esc(e.f)}">↓ ${esc(e.ed)}</a>`).join('<br>')
+        : `<span class="soontxt">추후 업데이트 예정</span>`}</td>
+      <td class="c">${s.active ? n + '건' : '<span class="badge">확장예정</span>'}</td>
+      <td class="c">${esc(s.cycle)}</td></tr>`;
+  }).join('');
+  document.getElementById('srctable').innerHTML =
+    `<tr><th>코드</th><th>자료 · 발행기관</th><th>공종</th><th>원본링크</th><th>원문</th><th>수록</th><th>개정</th></tr>${rows}`;
+}
+
+/* ── 렌더 ────────────────────────────────────────────────── */
+const PAGE_SIZE = 10;   // 한 페이지에 보여줄 개수
+
+function renderPager(totalPages, page){
+  pager.textContent = '';
+  if(totalPages <= 1) return;
+
+  const WIN = 10;   // 한 번에 보여줄 페이지 번호 개수 (구글처럼 1~10, 다음 누르면 11~20 …)
+  const winStart = Math.floor((page - 1) / WIN) * WIN + 1;
+  const winEnd = Math.min(winStart + WIN - 1, totalPages);
+
+  if(winStart > 1){
+    const prv = document.createElement('button');
+    prv.type = 'button'; prv.className = 'pgprev';
+    prv.innerHTML = '<span aria-hidden="true">‹</span> 이전';
+    prv.onclick = () => { state.page = winStart - 1; sync(); scrollToList(); };
+    pager.appendChild(prv);
+  }
+
+  for(let p = winStart; p <= winEnd; p++){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pgnum' + (p === page ? ' cur' : '');
+    b.textContent = p;
+    b.setAttribute('aria-current', p === page ? 'page' : 'false');
+    b.onclick = () => { state.page = p; sync(); scrollToList(); };
+    pager.appendChild(b);
+  }
+
+  if(winEnd < totalPages){
+    const nxt = document.createElement('button');
+    nxt.type = 'button'; nxt.className = 'pgnext';
+    nxt.innerHTML = '다음 <span aria-hidden="true">›</span>';
+    nxt.onclick = () => { state.page = winEnd + 1; sync(); scrollToList(); };
+    pager.appendChild(nxt);
+  }
+}
+
+function scrollToList(){
+  list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function sync(){
+  buildChips();
+
+  let rows = items.filter(match);
+  rows = state.sort === 'rate'
+    ? [...rows].sort((a, b) => b.hi - a.hi || a.id.localeCompare(b.id))
+    : rows;
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  if(state.page > totalPages) state.page = totalPages;
+  if(state.page < 1) state.page = 1;
+  const start = (state.page - 1) * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+  document.getElementById('shown').textContent = rows.length;
+  list.textContent = '';
+  if(!rows.length){ list.innerHTML = emptyHTML(); pager.textContent = ''; return; }
+
+  const frag = document.createDocumentFragment();
+  pageRows.forEach((it, i) => frag.appendChild(card(it, i)));
+  list.appendChild(frag);
+  requestAnimationFrame(() => list.querySelectorAll('.bar').forEach(b => b.classList.add('ready')));
+
+  renderPager(totalPages, state.page);
+}
+
+buildSrcTable();
+sync();
+
+/* ── 무기명 게시판 ───────────────────────────────────────── */
+const BKEY = 'surcharge_board_v1';
+const MAILTO = 'jjw3717@nate.com';
+const bState = { kind:null };
+const $b = id => document.getElementById(id);
+
+const loadPosts = () => { try { return JSON.parse(localStorage.getItem(BKEY)) || []; } catch(e){ return []; } };
+const savePosts = p => { try { localStorage.setItem(BKEY, JSON.stringify(p)); } catch(e){} };
+
+const BSUB = {
+  request:'수록되지 않은 재료의 할증률이 필요하면 남겨주세요. 근거가 될 원문(품셈 조항·쪽수)을 함께 적어주시면 확인이 빠릅니다.',
+  error:'값·조항 위치·단위·연도 표기가 원문과 다른 부분을 알려주세요. 어떤 항목의 무엇이 잘못됐는지 적어주시면 됩니다.'
+};
+
+function fillCats(){
+  $b('bCat').innerHTML = '<option value="">선택 안 함</option>' +
+    meta.cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+}
+function counts(){
+  const p = loadPosts();
+  const r = p.filter(x => x.kind === 'request').length, e = p.filter(x => x.kind === 'error').length;
+  $b('nReq').textContent = r ? r : '';
+  $b('nErr').textContent = e ? e : '';
+}
+function renderPosts(){
+  const box = $b('bPosts');
+  const rows = loadPosts().filter(p => p.kind === bState.kind).sort((a,b) => b.at - a.at);
+  if(!rows.length){
+    box.innerHTML = '<div class="bempty">아직 올라온 글이 없습니다. 첫 글을 남겨보세요.</div>';
+    return;
+  }
+  box.innerHTML = rows.map(p => `<article class="post">
+      <div class="ph">
+        <span class="kind${p.kind === 'error' ? ' err' : ''}">${p.kind === 'error' ? '오류' : '요청'}</span>
+        <span>${esc(p.nick || '익명')}</span>
+        <span>${new Date(p.at).toLocaleString('ko-KR')}</span>
+        ${p.cat ? `<span>${esc(p.cat)}</span>` : ''}
+        <button class="del" type="button" data-del="${p.id}">삭제</button>
+      </div>
+      <div class="tgt">${esc(p.target)}</div>
+      <div class="bd">${esc(p.body)}</div>
+      ${p.ref ? `<a href="${esc(p.ref)}" target="_blank" rel="noopener noreferrer">${esc(p.ref)} ↗</a>` : ''}
+    </article>`).join('');
+  box.querySelectorAll('[data-del]').forEach(btn => {
+    btn.onclick = () => {
+      if(!confirm('이 글을 지웁니다. 되돌릴 수 없습니다.')) return;
+      savePosts(loadPosts().filter(p => p.id !== btn.dataset.del));
+      renderPosts(); counts();
+    };
+  });
+}
+function openBoard(kind){
+  const same = bState.kind === kind && !$b('board').hidden;
+  bState.kind = kind;
+  $b('board').hidden = same;
+  $b('bReq').setAttribute('aria-expanded', !same && kind === 'request');
+  $b('bErr').setAttribute('aria-expanded', !same && kind === 'error');
+  if(same) return;
+  $b('bTitle').textContent = kind === 'error' ? '오류 신고' : '요청사항';
+  $b('bSub').textContent = BSUB[kind];
+  $b('bMsg').textContent = '';
+  renderPosts();
+}
+$b('bReq').onclick = () => openBoard('request');
+$b('bErr').onclick = () => openBoard('error');
+
+function formVals(){
+  return {
+    target:$b('bTarget').value.trim(),
+    cat:$b('bCat').value,
+    body:$b('bBody').value.trim(),
+    ref:$b('bRef').value.trim(),
+    nick:$b('bNick').value.trim()
+  };
+}
+$b('bForm').onsubmit = ev => {
+  ev.preventDefault();
+  const v = formVals();
+  if(!v.target || !v.body) return;
+  const posts = loadPosts();
+  posts.push({ id:'p' + Date.now().toString(36), kind:bState.kind, at:Date.now(), ...v });
+  savePosts(posts);
+  $b('bForm').reset();
+  $b('bMsg').textContent = '올렸습니다 (이 브라우저에 저장)';
+  renderPosts(); counts();
+};
+$b('bMail').onclick = () => {
+  const v = formVals();
+  const kindKo = bState.kind === 'error' ? '오류 신고' : '요청사항';
+  const subject = `[재료 할증률 ${kindKo}] ${v.target || '(대상 미기입)'}`;
+  const body = [
+    `구분: ${kindKo}`,
+    `대상: ${v.target}`,
+    v.cat ? `분류: ${v.cat}` : '',
+    '', v.body, '',
+    v.ref ? `참고 링크: ${v.ref}` : '',
+    `작성자: ${v.nick || '익명'}`,
+    `작성 시각: ${new Date().toLocaleString('ko-KR')}`
+  ].filter(Boolean).join('\n');
+  location.href = `mailto:${MAILTO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+};
+
+fillCats();
+counts();
+</script>
+</body>
+</html>
