@@ -40,23 +40,6 @@ body{
 .masthead h1 em{font-style:normal;color:var(--add)}
 .lede{margin:14px 0 0;max-width:44em;color:var(--muted);font-size:14px}
 
-/* ---------- 공종 탭 ---------- */
-.trades{display:flex;gap:2px;margin-top:22px;border-bottom:1px solid var(--rule);overflow-x:auto}
-.tab{
-  position:relative;flex:none;border:0;background:none;cursor:pointer;color:var(--muted);
-  font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:-.01em;
-  padding:9px 14px 11px;white-space:nowrap;
-}
-.tab sup{font-family:var(--mono);font-size:10px;font-weight:500;margin-left:4px;opacity:.75;top:-.4em}
-.tab:hover{color:var(--ink)}
-.tab[aria-selected="true"]{color:var(--ink)}
-.tab[aria-selected="true"]::after{
-  content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:3px;background:var(--base);
-}
-.tab.soon{color:#9DAEBB}
-.tab.soon[aria-selected="true"]::after{background:var(--add)}
-.tab:focus-visible{outline:2px solid var(--base);outline-offset:-3px}
-
 /* ---------- controls ---------- */
 .controls{
   position:sticky;top:0;z-index:20;background:var(--surface);
@@ -66,24 +49,13 @@ body{
 .searchrow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
 .field{position:relative;flex:1 1 240px}
 .field input{
-  width:100%;padding:13px 14px 13px 40px;border:1.5px solid var(--rule);
-  border-radius:2px;background:var(--panel);color:var(--ink);
-  font-family:var(--sans);font-size:15px;
+  width:100%;padding:19px 20px 19px 48px;border:1.5px solid var(--rule);
+  border-radius:3px;background:var(--panel);color:var(--ink);
+  font-family:var(--sans);font-size:19px;
 }
 .field input::placeholder{color:#93A6B4}
 .field input:focus{outline:none;border-color:var(--base);box-shadow:0 0 0 3px rgba(15,60,90,.14)}
-.field svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted)}
-.pick{
-  display:flex;align-items:center;gap:6px;flex:none;
-  border:1.5px solid var(--rule);border-radius:2px;background:var(--panel);padding:0 10px;
-}
-.pick label{font-size:11px;color:var(--muted);white-space:nowrap}
-.pick select{
-  border:0;background:none;color:var(--ink);padding:11px 2px;max-width:170px;
-  font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;
-}
-.pick select:focus{outline:none}
-.pick:focus-within{border-color:var(--base);box-shadow:0 0 0 3px rgba(15,60,90,.14)}
+.field svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);width:19px;height:19px}
 .tally{
   display:flex;align-items:center;padding:0 14px;border:1.5px solid var(--rule);
   border-radius:2px;background:var(--panel);
@@ -248,6 +220,25 @@ body{
 .edsel:focus{outline:none;border-color:var(--base)}
 
 /* ---------- empty & footer ---------- */
+/* ---------- 페이지 내비게이션 ---------- */
+.pager{
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;
+  gap:4px;padding:34px 6px 18px;
+}
+.pgnum{
+  min-width:34px;height:34px;padding:0 4px;border:0;background:none;cursor:pointer;
+  color:var(--base);font-family:var(--sans);font-size:15px;font-weight:600;
+  border-radius:50%;
+}
+.pgnum:hover{background:var(--panel)}
+.pgnum.cur{background:var(--base);color:#F2F8FB;cursor:default}
+.pgprev,.pgnext{
+  display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 12px;margin:0 6px;
+  border:0;background:none;cursor:pointer;color:var(--base);
+  font-family:var(--sans);font-size:14px;font-weight:600;border-radius:3px;
+}
+.pgprev:hover,.pgnext:hover{background:var(--panel)}
+
 .empty{padding:56px 6px;text-align:center;color:var(--muted)}
 .empty strong{display:block;color:var(--ink);font-size:16px;margin-bottom:8px}
 .empty .how{
@@ -289,8 +280,6 @@ footer b{color:var(--ink);font-weight:600}
 }
 
 @media (max-width:560px){
-  .pick{flex:1 1 100%}
-  .pick select{max-width:none;flex:1}
   .tally{width:100%;justify-content:center;padding:9px}
   .rate b{font-size:22px}
   .drow{flex-direction:column;gap:3px}
@@ -310,51 +299,11 @@ footer b{color:var(--ink);font-weight:600}
   <header class="masthead">
     <h1>재료 <em>할증률</em></h1>
     <p class="lede">설계수량에 얼마를 더해야 실제 소요수량이 되는지 찾아봅니다. 항목마다 <b>출처</b>·<b>적용 연도</b>·<b>원문 쪽수</b>를 함께 표시합니다.</p>
-    <div class="boardbar">
-      <span class="lbl">무기명 게시판</span>
-      <button class="bb" type="button" id="bReq" aria-expanded="false">요청사항 <span class="n" id="nReq"></span></button>
-      <button class="bb alt" type="button" id="bErr" aria-expanded="false">오류 신고 <span class="n" id="nErr"></span></button>
-    </div>
     <p class="notice" role="note">
       <span class="tag">주의사항</span>
       <span>본 자료는 <b>참고용</b>이며, 설계도서 최종 작성 시 반드시 <b>관련 원문을 확인한 후</b> 사용하시기 바랍니다.</span>
     </p>
-    <div class="trades" id="trades" role="tablist" aria-label="공종"></div>
   </header>
-
-  <section class="board" id="board" hidden aria-live="polite">
-    <h2 id="bTitle">요청사항</h2>
-    <p class="sub" id="bSub"></p>
-    <form class="bform" id="bForm" autocomplete="off">
-      <div>
-        <label for="bTarget">대상 재료 · 항목</label>
-        <input id="bTarget" required maxlength="60" placeholder="예: 아스팔트 콘크리트">
-      </div>
-      <div>
-        <label for="bCat">분류 <span style="opacity:.7">(선택)</span></label>
-        <select id="bCat"></select>
-      </div>
-      <div class="wide">
-        <label for="bBody">내용</label>
-        <textarea id="bBody" required maxlength="1200" placeholder="필요한 값, 근거 원문, 잘못된 부분 등을 적어주세요."></textarea>
-      </div>
-      <div>
-        <label for="bRef">참고 링크 <span style="opacity:.7">(선택)</span></label>
-        <input id="bRef" type="url" placeholder="https://">
-      </div>
-      <div>
-        <label for="bNick">표시 이름 <span style="opacity:.7">(비우면 익명)</span></label>
-        <input id="bNick" maxlength="20" placeholder="익명">
-      </div>
-      <div class="act">
-        <button class="ob" type="submit">글 올리기</button>
-        <button class="ob ghost" type="button" id="bMail">메일로 접수 ↗</button>
-        <span class="pgno" id="bMsg"></span>
-      </div>
-      <p class="note">이름·연락처를 남기지 않아도 됩니다. 올린 글은 <b>이 브라우저에만</b> 저장되므로 관리자에게 꼭 전달하려면 <b>메일로 접수</b>를 눌러 <span style="font-family:var(--mono)">jjw3717@nate.com</span> 으로 보내주세요.</p>
-    </form>
-    <div class="posts" id="bPosts"></div>
-  </section>
 
   <div class="controls">
     <div class="searchrow">
@@ -364,16 +313,55 @@ footer b{color:var(--ink);font-weight:600}
         </svg>
         <input id="q" type="search" placeholder="예: 레미콘, 사석, 이형철근, 벽돌" autocomplete="off" aria-label="재료 검색">
       </div>
-      <div class="pick"><label for="year">기준연도</label><select id="year"></select></div>
-      <div class="pick"><label for="src">출처</label><select id="src"></select></div>
       <div class="tally" aria-live="polite"><b id="shown">0</b><span>&nbsp;/&nbsp;<span id="total">0</span></span></div>
     </div>
-    <div class="chips" id="chips" role="group" aria-label="분류 필터"></div>
+    <div class="chips" id="chips" role="group" aria-label="목록 옵션"></div>
   </div>
 
   <main class="list" id="list"></main>
+  <nav class="pager" id="pager" aria-label="목록 페이지"></nav>
 
   <footer>
+    <div class="boardbar">
+      <span class="lbl">무기명 게시판</span>
+      <button class="bb" type="button" id="bReq" aria-expanded="false">요청사항 <span class="n" id="nReq"></span></button>
+      <button class="bb alt" type="button" id="bErr" aria-expanded="false">오류 신고 <span class="n" id="nErr"></span></button>
+    </div>
+
+    <section class="board" id="board" hidden aria-live="polite">
+      <h2 id="bTitle">요청사항</h2>
+      <p class="sub" id="bSub"></p>
+      <form class="bform" id="bForm" autocomplete="off">
+        <div>
+          <label for="bTarget">대상 재료 · 항목</label>
+          <input id="bTarget" required maxlength="60" placeholder="예: 아스팔트 콘크리트">
+        </div>
+        <div>
+          <label for="bCat">분류 <span style="opacity:.7">(선택)</span></label>
+          <select id="bCat"></select>
+        </div>
+        <div class="wide">
+          <label for="bBody">내용</label>
+          <textarea id="bBody" required maxlength="1200" placeholder="필요한 값, 근거 원문, 잘못된 부분 등을 적어주세요."></textarea>
+        </div>
+        <div>
+          <label for="bRef">참고 링크 <span style="opacity:.7">(선택)</span></label>
+          <input id="bRef" type="url" placeholder="https://">
+        </div>
+        <div>
+          <label for="bNick">표시 이름 <span style="opacity:.7">(비우면 익명)</span></label>
+          <input id="bNick" maxlength="20" placeholder="익명">
+        </div>
+        <div class="act">
+          <button class="ob" type="submit">글 올리기</button>
+          <button class="ob ghost" type="button" id="bMail">메일로 접수 ↗</button>
+          <span class="pgno" id="bMsg"></span>
+        </div>
+        <p class="note">이름·연락처를 남기지 않아도 됩니다. 올린 글은 <b>이 브라우저에만</b> 저장되므로 관리자에게 꼭 전달하려면 <b>메일로 접수</b>를 눌러 <span style="font-family:var(--mono)">jjw3717@nate.com</span> 으로 보내주세요.</p>
+      </form>
+      <div class="posts" id="bPosts"></div>
+    </section>
+
     <p><b>출처 목록</b></p>
     <table class="srctable" id="srctable"></table>
     <p class="fixnote"><b>다운로드 · 원본링크</b> <b>다운로드</b>는 사이트 옆 <span style="font-family:var(--mono)">docs/</span> 폴더에 둔 원문 PDF를 바로 받습니다. <b>원본링크</b>는 발행기관의 원문 게시판을 새 창으로 엽니다. 원문 PDF는 저작권 표시가 붙은 자료라 이 사이트가 재배포하지 않으니, 공개 배포 시 <span style="font-family:var(--mono)">docs/</span>는 함께 올리지 마세요.</p>
@@ -390,13 +378,11 @@ const DB = /*__DATA__*/;
 const items = DB.items, meta = DB.meta, SRC = DB.sources;
 const UNIT = 0.58;                       // 할증 1%p 당 막대 폭
 const LATEST = meta.latest;
-const state = { q:'', trade:'전체', cat:'전체', year:'전체', src:'전체', keyOnly:false, sort:'id' };
+const state = { q:'', trade:'전체', cat:'전체', year:'전체', src:'전체', keyOnly:false, sort:'id', page:1 };
 
 const list   = document.getElementById('list');
 const chips  = document.getElementById('chips');
-const tabs   = document.getElementById('trades');
-const selYr  = document.getElementById('year');
-const selSrc = document.getElementById('src');
+const pager  = document.getElementById('pager');
 document.getElementById('total').textContent = items.length;
 document.getElementById('built').textContent =
   `${meta.src_file} · ${meta.built} 생성 · ${meta.count}건`;
@@ -406,39 +392,7 @@ const srcName  = c => (SRC[c] && SRC[c].name) || c || '출처 미기입';
 const inYear   = (it, y) => y === '전체' || ((it.from ?? 0) <= y && (it.to === null || it.to === undefined || it.to >= y));
 const activeSrc = () => Object.values(SRC).filter(s => s.active);
 
-/* ── 공종 탭 ─────────────────────────────────────────────── */
-function countTrade(t){
-  return items.filter(it => (t === '전체' || it.trades.includes(t)) && inYear(it, state.year)).length;
-}
-function buildTabs(){
-  tabs.textContent = '';
-  ['전체', ...meta.trades_all].forEach(t => {
-    const live = t === '전체' || meta.trades.includes(t);
-    const b = document.createElement('button');
-    b.className = 'tab' + (live ? '' : ' soon');
-    b.type = 'button'; b.role = 'tab'; b.dataset.trade = t;
-    b.innerHTML = `${esc(t)}<sup>${live ? countTrade(t) : '준비'}</sup>`;
-    b.setAttribute('aria-selected', t === state.trade);
-    b.onclick = () => { state.trade = t; state.cat = '전체'; sync(); };
-    tabs.appendChild(b);
-  });
-}
-
-/* ── 연도 · 출처 셀렉트 ──────────────────────────────────── */
-function buildSelects(){
-  const yrs = new Set(meta.years);
-  for(let y = LATEST - 1; y >= LATEST - 2; y--) yrs.add(y);   // 미등록 과년도 자리
-  selYr.innerHTML = [...yrs].sort((a, b) => b - a)
-    .map(y => `<option value="${y}"${y === state.year ? ' selected' : ''}>${y}년${meta.years.includes(y) ? '' : ' (미등록)'}</option>`)
-    .join('') + `<option value="전체"${state.year === '전체' ? ' selected' : ''}>전체 연도</option>`;
-  selYr.onchange = e => { state.year = e.target.value === '전체' ? '전체' : +e.target.value; sync(); };
-
-  selSrc.innerHTML = `<option value="전체">전체</option>` +
-    activeSrc().map(s => `<option value="${esc(s.code)}">${esc(s.name)}</option>`).join('');
-  selSrc.onchange = e => { state.src = e.target.value; sync(); };
-}
-
-/* ── 분류 칩 ─────────────────────────────────────────────── */
+/* ── 목록 옵션 칩 (주요 재료만 / 정렬) ───────────────────── */
 function chip(label, pressed, cls){
   const b = document.createElement('button');
   b.className = 'chip' + (cls ? ' ' + cls : '');
@@ -449,26 +403,17 @@ function chip(label, pressed, cls){
 let bKey, bSort;
 function buildChips(){
   chips.textContent = '';
-  const pool = items.filter(it => state.trade === '전체' || it.trades.includes(state.trade));
-  const cats = meta.cats.filter(c => pool.some(it => it.cat === c));
-  ['전체', ...cats].forEach(c => {
-    const b = chip(c, c === state.cat);
-    b.dataset.cat = c;
-    b.onclick = () => { state.cat = c; sync(); };
-    chips.appendChild(b);
-  });
-  const sep = document.createElement('span'); sep.className = 'sep'; chips.appendChild(sep);
   bKey = chip('주요 재료만', state.keyOnly, 'alt');
-  bKey.onclick = () => { state.keyOnly = !state.keyOnly; sync(); };
+  bKey.onclick = () => { state.keyOnly = !state.keyOnly; state.page = 1; sync(); };
   chips.appendChild(bKey);
   bSort = chip('할증 높은 순', state.sort === 'rate', 'alt');
-  bSort.onclick = () => { state.sort = state.sort === 'id' ? 'rate' : 'id'; sync(); };
+  bSort.onclick = () => { state.sort = state.sort === 'id' ? 'rate' : 'id'; state.page = 1; sync(); };
   chips.appendChild(bSort);
 }
 
 /* ── 검색 ────────────────────────────────────────────────── */
 document.getElementById('q').addEventListener('input', e => {
-  state.q = e.target.value.trim().toLowerCase(); sync();
+  state.q = e.target.value.trim().toLowerCase(); state.page = 1; sync();
 });
 
 function match(it){
@@ -659,27 +604,72 @@ function buildSrcTable(){
 }
 
 /* ── 렌더 ────────────────────────────────────────────────── */
-function sync(){
-  buildTabs();
-  buildChips();
+const PAGE_SIZE = 10;   // 한 페이지에 보여줄 개수
 
+function renderPager(totalPages, page){
+  pager.textContent = '';
+  if(totalPages <= 1) return;
+
+  const WIN = 10;   // 한 번에 보여줄 페이지 번호 개수 (구글처럼 1~10, 다음 누르면 11~20 …)
+  const winStart = Math.floor((page - 1) / WIN) * WIN + 1;
+  const winEnd = Math.min(winStart + WIN - 1, totalPages);
+
+  if(winStart > 1){
+    const prv = document.createElement('button');
+    prv.type = 'button'; prv.className = 'pgprev';
+    prv.innerHTML = '<span aria-hidden="true">‹</span> 이전';
+    prv.onclick = () => { state.page = winStart - 1; sync(); scrollToList(); };
+    pager.appendChild(prv);
+  }
+
+  for(let p = winStart; p <= winEnd; p++){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pgnum' + (p === page ? ' cur' : '');
+    b.textContent = p;
+    b.setAttribute('aria-current', p === page ? 'page' : 'false');
+    b.onclick = () => { state.page = p; sync(); scrollToList(); };
+    pager.appendChild(b);
+  }
+
+  if(winEnd < totalPages){
+    const nxt = document.createElement('button');
+    nxt.type = 'button'; nxt.className = 'pgnext';
+    nxt.innerHTML = '다음 <span aria-hidden="true">›</span>';
+    nxt.onclick = () => { state.page = winEnd + 1; sync(); scrollToList(); };
+    pager.appendChild(nxt);
+  }
+}
+
+function scrollToList(){
+  list.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function sync(){
+  buildChips();
 
   let rows = items.filter(match);
   rows = state.sort === 'rate'
     ? [...rows].sort((a, b) => b.hi - a.hi || a.id.localeCompare(b.id))
     : rows;
 
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  if(state.page > totalPages) state.page = totalPages;
+  if(state.page < 1) state.page = 1;
+  const start = (state.page - 1) * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
+
   document.getElementById('shown').textContent = rows.length;
   list.textContent = '';
-  if(!rows.length){ list.innerHTML = emptyHTML(); return; }
+  if(!rows.length){ list.innerHTML = emptyHTML(); pager.textContent = ''; return; }
 
   const frag = document.createDocumentFragment();
-  rows.forEach((it, i) => frag.appendChild(card(it, i)));
+  pageRows.forEach((it, i) => frag.appendChild(card(it, i)));
   list.appendChild(frag);
   requestAnimationFrame(() => list.querySelectorAll('.bar').forEach(b => b.classList.add('ready')));
+
+  renderPager(totalPages, state.page);
 }
 
-buildSelects();
 buildSrcTable();
 sync();
 
